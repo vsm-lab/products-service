@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "category-service.base-url",
+      "type": "java.lang.String",
+      "description": "The base url, under which the category service can be reached."
+  }
+] }
