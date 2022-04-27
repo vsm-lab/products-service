@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,20 +30,19 @@ public class ProductController {
                     HttpMethod.GET,
                     null,
                     String.class);
-            if (categoriesResponse.getStatusCode().is2xxSuccessful()) {
-                Product product = new Product();
-                product.setName(request.name);
-                product.setPrice(request.price);
-                product.setCategoryId(request.categoryId);
-                product.setDetails(request.details);
-                productRepository.save(product);
-                return new ResponseEntity<>("Saved", HttpStatus.OK);
-            } else if (categoriesResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "categoryId not found");
-            } else {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            assert (categoriesResponse.getStatusCode().is2xxSuccessful());
+            Product product = new Product();
+            product.setName(request.name);
+            product.setPrice(request.price);
+            product.setCategoryId(request.categoryId);
+            product.setDetails(request.details);
+            productRepository.save(product);
+            return new ResponseEntity<>("Saved", HttpStatus.OK);
         } catch (Exception ex) {
+            if (ex instanceof HttpClientErrorException &&
+                    ((HttpClientErrorException) ex).getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "categoryId not found");
+            }
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         }
     }
@@ -65,6 +65,8 @@ public class ProductController {
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "productId not found");
             }
+        } catch (ResponseStatusException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         }
