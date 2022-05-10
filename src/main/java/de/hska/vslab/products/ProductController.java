@@ -94,7 +94,7 @@ public class ProductController {
         }
     }
 
-    @DeleteMapping(path = "/products-by-category/{categoryId}")
+    @DeleteMapping(path = "/products/by-category/{categoryId}")
     public ResponseEntity<Void> deleteProductsByCategoryId(@PathVariable(value = "categoryId") Integer categoryId) {
         try {
             productRepository.deleteByCategoryId(categoryId);
