@@ -2,6 +2,7 @@ package de.hska.vslab.products;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.net.InetAddress;
 
 @Controller
 public class ProductController {
@@ -50,7 +53,11 @@ public class ProductController {
     @GetMapping(path = "/products")
     public ResponseEntity<Iterable<Product>> getAllProduct() {
         try {
-            return new ResponseEntity<>(productRepository.findAll(), HttpStatus.OK);
+            var ip = InetAddress.getLocalHost();
+            var hostname = ip.getHostName();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("HOSTNAME", hostname);
+            return new ResponseEntity<>(productRepository.findAll(), headers, HttpStatus.OK);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         }
