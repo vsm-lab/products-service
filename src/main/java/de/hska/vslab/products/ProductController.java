@@ -17,7 +17,7 @@ import java.net.InetAddress;
 @Controller
 public class ProductController {
 
-    @Value("${category-service.base-url}")
+    @Value("${categories-service.base-url}")
     private String categoryBaseUrl;
 
     @Autowired
@@ -26,7 +26,7 @@ public class ProductController {
     private static final RestTemplate restTemplate = new RestTemplate();
 
     @PostMapping(path = "/products")
-    public ResponseEntity<String> addNewProduct(@RequestBody AddNewProductRequest request) {
+    public ResponseEntity<Integer> addNewProduct(@RequestBody AddNewProductRequest request) {
         try {
             var categoriesResponse = restTemplate.exchange(
                     categoryBaseUrl + "/categories/" + request.categoryId,
@@ -39,8 +39,8 @@ public class ProductController {
             product.setPrice(request.price);
             product.setCategoryId(request.categoryId);
             product.setDetails(request.details);
-            productRepository.save(product);
-            return new ResponseEntity<>("Saved", HttpStatus.OK);
+            var createdProduct = productRepository.save(product);
+            return new ResponseEntity<>(createdProduct.getId(), HttpStatus.OK);
         } catch (Exception ex) {
             if (ex instanceof HttpClientErrorException &&
                     ((HttpClientErrorException) ex).getStatusCode().equals(HttpStatus.NOT_FOUND)) {
